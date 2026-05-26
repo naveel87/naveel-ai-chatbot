@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Naveel AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <a href="/logout">
+    Logout
+</a>
+</head>
+
+<body>
+
+    <div class="main-container">
+
+    <div class="sidebar">
+
+        <h2>Chat History</h2>
+
+        {% for chat in chats %}
+
+            <div class="history-item">
+                {{ chat[1] }}
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    <div class="chat-container">
+
+        <div class="header">
+            Naveel AI
+        </div>
+
+        <div id="chat-box"></div>
+
+        <div class="input-area">
+
+            <input
+                type="text"
+                id="user-input"
+                placeholder="Type your message..."
+            >
+
+            <button onclick="clearChat()">
+                Clear
+            </button>
+
+            <button onclick="sendMessage()">
+                Send
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <script>
+
+    let chatBox = document.getElementById("chat-box")
+
+    // Load saved chats
+    window.onload = function () {
+
+        let savedChats = localStorage.getItem("chatHistory")
+
+        if (savedChats) {
+            chatBox.innerHTML = savedChats
+        }
+
+    }
+
+    async function sendMessage() {
+
+        let input = document.getElementById("user-input")
+
+        let message = input.value
+
+        if (message.trim() === "") {
+            return
+        }
+
+        // User message
+        chatBox.innerHTML += `
+            <div class="message user-message">
+                ${message}
+            </div>
+        `
+
+        // Typing indicator
+        chatBox.innerHTML += `
+            <div class="message ai-message" id="typing">
+                AI is typing...
+            </div>
+        `
+
+        chatBox.scrollTop = chatBox.scrollHeight
+
+        input.value = ""
+
+        let response = await fetch("/chat", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                message: message
+            })
+
+        })
+
+        let data = await response.json()
+
+        // Remove typing indicator
+        document.getElementById("typing").remove()
+
+      let time = new Date().toLocaleTimeString()
+
+chatBox.innerHTML += `
+    <div class="message ai-message">
+        ${data.reply}
+        <div style="font-size:12px; margin-top:5px;">
+            ${time}
+        </div>
+    </div>
+`
+
+        // Save chat history
+        localStorage.setItem(
+            "chatHistory",
+            chatBox.innerHTML
+        )
+
+        chatBox.scrollTop = chatBox.scrollHeight
+
+    }
+
+    document
+        .getElementById("user-input")
+        .addEventListener("keypress", function(event) {
+
+            if (event.key === "Enter") {
+                sendMessage()
+            }
+
+        })
+function clearChat() {
+
+    localStorage.removeItem("chatHistory")
+
+    chatBox.innerHTML = ""
+
+}
+</script>
+
+
+</body>
+
+</html>
