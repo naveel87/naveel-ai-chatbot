@@ -1,17 +1,42 @@
-from dotenv import load_dotenv
-import os
+import sqlite3
 
-import mysql.connector
-import hashlib
-conn = mysql.connector.connect(
-    host="localhost",
-    user="sailadmin",
-    password=os.getenv("MYSQL_PASSWORD"),
-    database="ai_chatbot"
+conn = sqlite3.connect(
+    "chatbot.db",
+    check_same_thread=False
 )
 
 cursor = conn.cursor()
-load_dotenv()
+
+# Create chats table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS chats (
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    user_message TEXT,
+
+    ai_response TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+)
+""")
+
+# Create users table
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    username TEXT,
+
+    password TEXT
+
+)
+""")
+
+conn.commit()
+
 
 def save_chat(user_message, ai_response):
 
@@ -20,7 +45,7 @@ def save_chat(user_message, ai_response):
         user_message,
         ai_response
     )
-    VALUES (%s, %s)
+    VALUES (?, ?)
     """
 
     values = (
@@ -45,6 +70,10 @@ def get_chat_history():
 
     return cursor.fetchall()
 
+
+import hashlib
+
+
 def create_user(username, password):
 
     hashed_password = hashlib.sha256(
@@ -56,7 +85,7 @@ def create_user(username, password):
         username,
         password
     )
-    VALUES (%s, %s)
+    VALUES (?, ?)
     """
 
     values = (
@@ -67,6 +96,8 @@ def create_user(username, password):
     cursor.execute(sql, values)
 
     conn.commit()
+
+
 def check_user(username, password):
 
     hashed_password = hashlib.sha256(
@@ -76,8 +107,8 @@ def check_user(username, password):
     sql = """
     SELECT *
     FROM users
-    WHERE username=%s
-    AND password=%s
+    WHERE username=?
+    AND password=?
     """
 
     values = (

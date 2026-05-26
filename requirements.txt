@@ -2,7 +2,6 @@ fastapi
 uvicorn
 jinja2
 python-multipart
-mysql-connector-python
 openai
 itsdangerous
 python-dotenv
