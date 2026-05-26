@@ -47,12 +47,13 @@ async def home(request: Request):
     chats = get_chat_history()
 
     return templates.TemplateResponse(
-        "index.html",
-        {
-            "request": request,
-            "chats": chats
-        }
-    )
+    request=request,
+    name="index.html",
+    context={
+        "request": request,
+        "chats": chats
+    }
+)
 @app.get("/logout")
 async def logout(request: Request):
 
@@ -86,13 +87,13 @@ async def chat(request: ChatRequest):
 @app.get("/signup", response_class=HTMLResponse)
 async def signup_page(request: Request):
 
-    return templates.TemplateResponse(
-        "signup.html",
-        {
-            "request": request
-        }
-    )
-
+  return templates.TemplateResponse(
+    request=request,
+    name="signup.html",
+    context={
+        "request": request
+    }
+)
 
 @app.post("/signup")
 async def signup(
@@ -114,13 +115,13 @@ async def signup(
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
 
-    return templates.TemplateResponse(
-        "login.html",
-        {
-            "request": request
-        }
-    )
-
+   return templates.TemplateResponse(
+    request=request,
+    name="login.html",
+    context={
+        "request": request
+    }
+)
 
 @app.post("/login")
 async def login(
