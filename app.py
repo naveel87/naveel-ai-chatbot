@@ -15,7 +15,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from openai import OpenAI
 app = FastAPI()
 load_dotenv()
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
+# app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 app.add_middleware(
     SessionMiddleware,
     secret_key=os.getenv("SECRET_KEY")
