@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+import uuid
 from database import get_chat_history
 from database import save_chat
 from fastapi import FastAPI, Request
@@ -15,7 +16,8 @@ from starlette.middleware.sessions import SessionMiddleware
 from openai import OpenAI
 app = FastAPI()
 load_dotenv()
-conversation_history = []
+# conversation_history = []
+chat_sessions = {}
 # app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 app.add_middleware(
     SessionMiddleware,
@@ -32,7 +34,8 @@ templates = Jinja2Templates(directory="templates")
 
 
 class ChatRequest(BaseModel):
-    message: str
+   message: str
+   chat_id: str
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -47,14 +50,22 @@ async def home(request: Request):
 
     chats = get_chat_history()
 
+    chat_id = str(uuid.uuid4())
+
+    chat_sessions[chat_id] = []
+
     return templates.TemplateResponse(
-    request=request,
-    name="index.html",
-    context={
-        "request": request,
-        "chats": chats
-    }
-)
+
+        request=request,
+
+        name="index.html",
+
+        context={
+            "request": request,
+            "chats": chats,
+            "chat_id": chat_id
+        }
+    )
 @app.get("/logout")
 async def logout(request: Request):
 
@@ -67,14 +78,22 @@ async def logout(request: Request):
 @app.post("/chat")
 async def chat(request: ChatRequest):
 
+    conversation_history = chat_sessions.get(
+        request.chat_id,
+        []
+    )
+
     conversation_history.append({
         "role": "user",
         "content": request.message
     })
 
     response = client.chat.completions.create(
+
         model="openrouter/free",
+
         messages=conversation_history
+
     )
 
     ai_reply = response.choices[0].message.content
@@ -83,6 +102,8 @@ async def chat(request: ChatRequest):
         "role": "assistant",
         "content": ai_reply
     })
+
+    chat_sessions[request.chat_id] = conversation_history
 
     save_chat(
         request.message,

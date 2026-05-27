@@ -58,7 +58,7 @@
 </div>
 
     <script>
-
+    let chatId = "{{ chat_id }}"
     let chatBox = document.getElementById("chat-box")
 
     // Load saved chats
@@ -109,8 +109,9 @@
             },
 
             body: JSON.stringify({
-                message: message
-            })
+            message: message,
+            chat_id: chatId
+       })
 
         })
 
