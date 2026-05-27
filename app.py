@@ -15,6 +15,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from openai import OpenAI
 app = FastAPI()
 load_dotenv()
+conversation_history = []
 # app.add_middleware(SessionMiddleware, secret_key=os.getenv("SECRET_KEY"))
 app.add_middleware(
     SessionMiddleware,
@@ -66,21 +67,28 @@ async def logout(request: Request):
 @app.post("/chat")
 async def chat(request: ChatRequest):
 
+    conversation_history.append({
+        "role": "user",
+        "content": request.message
+    })
+
     response = client.chat.completions.create(
         model="openrouter/free",
-        messages=[
-            {
-                "role": "user",
-                "content": request.message
-            }
-        ]
+        messages=conversation_history
     )
 
     ai_reply = response.choices[0].message.content
 
-    # Save the chat to the database
-    save_chat(request.message, ai_reply)
-    
+    conversation_history.append({
+        "role": "assistant",
+        "content": ai_reply
+    })
+
+    save_chat(
+        request.message,
+        ai_reply
+    )
+
     return {
         "reply": ai_reply
     }
