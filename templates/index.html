@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Naveel AI</title>
+    <title>AI Chat bot</title>
     <link rel="stylesheet" href="/static/style.css">
     <a href="/logout">
     Logout
@@ -30,7 +30,7 @@
     <div class="chat-container">
 
         <div class="header">
-            Naveel AI
+         AI Chat Bot
         </div>
 
         <div id="chat-box"></div>
@@ -121,14 +121,36 @@
 
       let time = new Date().toLocaleTimeString()
 
-chatBox.innerHTML += `
-    <div class="message ai-message">
-        ${data.reply}
-        <div style="font-size:12px; margin-top:5px;">
-            ${time}
-        </div>
-    </div>
-`
+let aiDiv = document.createElement("div")
+
+aiDiv.className = "message ai-message"
+
+chatBox.appendChild(aiDiv)
+
+let text = data.reply
+
+let index = 0
+
+let interval = setInterval(() => {
+
+    aiDiv.innerHTML += text[index]
+
+    index++
+
+    chatBox.scrollTop = chatBox.scrollHeight
+
+    if (index >= text.length) {
+
+        clearInterval(interval)
+
+        localStorage.setItem(
+            "chatHistory",
+            chatBox.innerHTML
+        )
+
+    }
+
+}, 20)
 
         // Save chat history
         localStorage.setItem(
