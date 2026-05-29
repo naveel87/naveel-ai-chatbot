@@ -21,7 +21,23 @@ CREATE TABLE IF NOT EXISTS chats (
 
 )
 """)
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS chat_sessions (
 
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    chat_id TEXT,
+
+    user_message TEXT,
+
+    ai_response TEXT,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+)
+""")
+
+conn.commit()
 # Create users table
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS users (
@@ -36,8 +52,48 @@ CREATE TABLE IF NOT EXISTS users (
 """)
 
 conn.commit()
+def save_chat_session(
+    chat_id,
+    user_message,
+    ai_response
+):
 
+    sql = """
+    INSERT INTO chat_sessions (
+        chat_id,
+        user_message,
+        ai_response
+    )
+    VALUES (?, ?, ?)
+    """
 
+    cursor.execute(
+        sql,
+        (
+            chat_id,
+            user_message,
+            ai_response
+        )
+    )
+
+    conn.commit()
+def get_session_messages(chat_id):
+
+    sql = """
+    SELECT
+        user_message,
+        ai_response
+    FROM chat_sessions
+    WHERE chat_id = ?
+    ORDER BY id
+    """
+
+    cursor.execute(
+        sql,
+        (chat_id,)
+    )
+
+    return cursor.fetchall()
 def save_chat(user_message, ai_response):
 
     sql = """

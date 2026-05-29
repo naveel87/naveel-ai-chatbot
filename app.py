@@ -1,6 +1,8 @@
 from dotenv import load_dotenv
 import os
 import uuid
+from database import save_chat_session
+from database import get_session_messages
 from database import get_chat_history
 from database import save_chat
 from fastapi import FastAPI, Request
@@ -49,10 +51,14 @@ async def home(request: Request):
         )
 
     chats = get_chat_history()
+    
+    if "chat_id" not in request.session:
+     request.session["chat_id"] = str(
+        uuid.uuid4()
+    )
 
-    chat_id = str(uuid.uuid4())
-
-    chat_sessions[chat_id] = []
+    chat_id = request.session["chat_id"]
+    
 
     return templates.TemplateResponse(
 
@@ -109,6 +115,11 @@ async def chat(request: ChatRequest):
         request.message,
         ai_reply
     )
+    save_chat_session(
+    request.chat_id,
+    request.message,
+    ai_reply
+)
 
     return {
         "reply": ai_reply
